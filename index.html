@@ -156,8 +156,9 @@
             background: none;
             border: none;
             cursor: pointer;
-            width: 40px;
-            height: 30px;
+            width: 30px;
+            height: 22px;
+            padding: 0;
             position: relative;
             z-index: 101;
             mix-blend-mode: difference;
@@ -166,20 +167,34 @@
         .menu-btn span {
             display: block;
             position: absolute;
-            height: 2px;
+            left: 0;
+            height: 1.5px;
             width: 100%;
             background: #fff;
-            transition: var(--transition);
+            border-radius: 2px;
+            transform-origin: center;
+            transition: top 0.35s cubic-bezier(0.65, 0, 0.35, 1) 0.15s,
+                        bottom 0.35s cubic-bezier(0.65, 0, 0.35, 1) 0.15s,
+                        transform 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+                        opacity 0.2s ease,
+                        width 0.3s ease;
         }
 
         .menu-btn span:nth-child(1) { top: 0; }
-        .menu-btn span:nth-child(2) { top: 50%; transform: translateY(-50%); width: 70%; right: 0; }
+        .menu-btn span:nth-child(2) { top: 50%; transform: translateY(-50%); width: 65%; right: 0; left: auto; }
         .menu-btn span:nth-child(3) { bottom: 0; }
 
         .menu-btn:hover span:nth-child(2) { width: 100%; }
 
+        .menu-btn.active span {
+            transition: top 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+                        bottom 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+                        transform 0.35s cubic-bezier(0.65, 0, 0.35, 1) 0.15s,
+                        opacity 0.2s ease,
+                        width 0.3s ease;
+        }
         .menu-btn.active span:nth-child(1) { top: 50%; transform: translateY(-50%) rotate(45deg); }
-        .menu-btn.active span:nth-child(2) { opacity: 0; }
+        .menu-btn.active span:nth-child(2) { opacity: 0; transform: translateY(-50%) scaleX(0); }
         .menu-btn.active span:nth-child(3) { bottom: 50%; transform: translateY(50%) rotate(-45deg); }
 
         /* Fullscreen MenuOverlay */
@@ -1446,33 +1461,38 @@
             .theme-toggle { right: 1rem; bottom: 4.75rem; width: 58px; height: 58px; }
             .theme-toggle .orb { width: 32px; height: 32px; }
 
+            .menu-btn { width: 26px; height: 18px; }
+            .menu-btn span { height: 1.5px; }
+
             .cv-timeline {
-                padding-left: 1.5rem;
+                padding-left: 1.4rem;
+                contain: layout style;
             }
             .cv-item {
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
-                margin-bottom: 1.75rem;
+                margin-bottom: 1.6rem;
                 font-size: 0.95rem;
                 line-height: 1.55;
-                word-break: break-word;
-                overflow-wrap: anywhere;
+                overflow-wrap: break-word;
             }
             .cv-item::before {
-                left: -1.85rem;
-                top: 0.55rem;
-                width: 10px;
-                height: 10px;
+                left: -1.75rem;
+                top: 0.5rem;
+                width: 9px;
+                height: 9px;
             }
             .cv-year {
                 display: block;
-                margin: 0 0 0.35rem 0;
-                font-size: 0.8rem;
-                letter-spacing: 0.08em;
+                margin: 0 0 0.3rem 0;
+                font-size: 0.78rem;
+                letter-spacing: 0.1em;
                 text-transform: uppercase;
                 line-height: 1;
             }
+            .menu-links a { font-size: 2.2rem; letter-spacing: 3px; }
+            .menu-links li { margin: 1.4rem 0; }
         }
     </style>
 </head>
@@ -2116,8 +2136,16 @@
             gsap.fromTo('.hero-description', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.5, delay: 0.55, ease: "power3.out" });
             
             // Generic Fade Up
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
             const fadeUps = document.querySelectorAll('.gsap-fade-up');
             fadeUps.forEach(elem => {
+                // On mobile, skip per-item fade-up for cv-items to avoid
+                // stacking dozens of ScrollTriggers (causes scroll jank on
+                // Chrome/Firefox Android; Safari tolerates it).
+                if (isMobile && elem.classList.contains('cv-item')) {
+                    gsap.set(elem, { clearProps: 'all' });
+                    return;
+                }
                 gsap.fromTo(elem, { y: 40, opacity: 0 }, {
                     scrollTrigger: {
                         trigger: elem,
