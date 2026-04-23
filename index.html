@@ -43,9 +43,7 @@
             --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             --theme-transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                 color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="light"] {
@@ -705,6 +703,7 @@
         .cv-item {
             position: relative;
             margin-bottom: 2rem;
+            contain: layout style;
         }
 
         .cv-item::before {
@@ -1184,33 +1183,29 @@
                 background: rgba(255, 255, 255, 0.03);
             }
             .menu-btn {
-                width: 36px;
-                height: 36px;
+                width: 40px;
+                height: 40px;
                 padding: 0;
-                border-radius: 0;
-                background: transparent;
-                border: none;
-                display: flex;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.28);
+                border: 1px solid rgba(212, 175, 55, 0.2);
+                display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 mix-blend-mode: normal;
             }
             .menu-btn span {
-                width: 20px;
-                height: 2px;
+                width: 18px;
                 left: 50%;
-                margin-left: -10px;
+                margin-left: -9px;
                 background: #16130d;
-                border-radius: 2px;
             }
-            .menu-btn span:nth-child(1) { top: 10px; }
             .menu-btn span:nth-child(2) {
-                width: 14px;
+                width: 12px;
                 left: 50%;
                 right: auto;
-                margin-left: -7px;
+                margin-left: -6px;
             }
-            .menu-btn span:nth-child(3) { bottom: 10px; }
             .features { padding: 4.5rem 2rem; }
             .features-header h2 { font-size: 2.1rem; }
             .feature-highlight { min-height: 340px; padding: 1.5rem; }
@@ -1275,6 +1270,10 @@
                 transform: translateX(-50%);
                 width: 50px;
                 height: 50px;
+            }
+            .feature-card, .cookie-bar, .theme-toggle, nav, .hero-socials a {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
             }
         }
         
@@ -1346,6 +1345,9 @@
         .hero-logo-large, .nav-logo img, .loader-logo, .footer-col img,
         h1, h2, h3, h4, h5, h6, p, a, span, strong, li, button, input {
             transition: var(--theme-transition);
+        }
+        .hero-logo-large, .nav-logo img, .loader-logo, .footer-col img {
+            transition: filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         a:hover { transition: color 0.3s ease; }
         html { color-scheme: dark; }
@@ -1663,6 +1665,7 @@
             .menu-links li { margin: 1.4rem 0; }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -2442,8 +2445,12 @@
                 }
             }
 
+            let lastHeroWidth = window.innerWidth;
             window.addEventListener('resize', () => {
+                if (window.innerWidth === lastHeroWidth) return;
+                lastHeroWidth = window.innerWidth;
                 cancelAnimationFrame(artAnimId);
+                artAnimId = null;
                 initGenerativeArt();
                 animateGenerativeArt();
             });
@@ -2479,6 +2486,7 @@
                         touchEligible = false;
                     }
                     cancelAnimationFrame(artAnimId);
+                    artAnimId = null;
                     initGenerativeArt();
                     animateGenerativeArt();
                 });
@@ -2489,11 +2497,35 @@
                 animateGenerativeArt();
             }, 800);
 
+            // Pause expensive canvas when hero is off-screen to free GPU/CPU for scrolling
+            let heroObserver;
+            try {
+                heroObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            if (!artAnimId) animateGenerativeArt();
+                        } else {
+                            if (artAnimId) {
+                                cancelAnimationFrame(artAnimId);
+                                artAnimId = null;
+                            }
+                        }
+                    });
+                }, { threshold: 0 });
+                if (heroSection) heroObserver.observe(heroSection);
+            } catch (e) {}
+
             // Expose for theme-change reroll so canvas picks up the new palette cleanly.
             window.__rerollHeroArt = function () {
                 cancelAnimationFrame(artAnimId);
+                artAnimId = null;
                 initGenerativeArt();
-                animateGenerativeArt();
+                if (heroSection) {
+                    const rect = heroSection.getBoundingClientRect();
+                    if (rect.bottom > 0 && rect.top < window.innerHeight) animateGenerativeArt();
+                } else {
+                    animateGenerativeArt();
+                }
             };
         }
     </script>
