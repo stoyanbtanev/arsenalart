@@ -1183,29 +1183,34 @@
                 background: rgba(255, 255, 255, 0.03);
             }
             .menu-btn {
-                width: 40px;
-                height: 40px;
+                width: 44px;
+                height: 44px;
                 padding: 0;
-                border-radius: 12px;
-                background: rgba(255, 255, 255, 0.28);
-                border: 1px solid rgba(212, 175, 55, 0.2);
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.45);
+                border: none;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 mix-blend-mode: normal;
+                box-shadow: 0 2px 8px rgba(46, 36, 18, 0.08);
             }
             .menu-btn span {
-                width: 18px;
+                width: 20px;
+                height: 2px;
                 left: 50%;
-                margin-left: -9px;
+                margin-left: -10px;
                 background: #16130d;
+                border-radius: 1px;
             }
+            .menu-btn span:nth-child(1) { top: 13px; }
             .menu-btn span:nth-child(2) {
-                width: 12px;
+                width: 14px;
                 left: 50%;
                 right: auto;
-                margin-left: -6px;
+                margin-left: -7px;
             }
+            .menu-btn span:nth-child(3) { bottom: 13px; }
             .features { padding: 4.5rem 2rem; }
             .features-header h2 { font-size: 2.1rem; }
             .feature-highlight { min-height: 340px; padding: 1.5rem; }
