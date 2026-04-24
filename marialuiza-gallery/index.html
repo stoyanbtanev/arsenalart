@@ -1167,6 +1167,8 @@
             font-size: 1rem;
             line-height: 1;
             padding: 0;
+            pointer-events: auto;
+            touch-action: manipulation;
         }
         .cookie-settings-btn:hover {
             background: var(--accent-color);
@@ -1183,6 +1185,7 @@
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
+            pointer-events: none;
         }
         [data-theme="light"] .cookie-settings-btn {
             background: rgba(252, 247, 236, 0.85);
@@ -1432,8 +1435,11 @@
                 width: 15px;
                 height: 15px;
             }
-            .hero-subtitle { font-size: 0.78rem; letter-spacing: 3px; }
-            .hero-description { font-size: 0.88rem; }
+            .hero-logo-text { margin-bottom: 1.1rem; }
+            .hero-logo-text .logo-main { font-size: clamp(2.1rem, 11vw, 3rem); letter-spacing: 0.08em; }
+            .hero-logo-text .logo-sub { font-size: 0.68rem; letter-spacing: 0.42em; }
+            .hero-subtitle { font-size: 0.7rem; letter-spacing: 2.4px; margin-bottom: 1rem; }
+            .hero-description { max-width: 300px; font-size: 0.82rem; line-height: 1.5; }
             .gallery-film-copy { text-align: center; padding: 0; }
             .intro-text h2 { font-size: 1.7rem; }
             .gallery-section h2 { font-size: 1.8rem; margin-bottom: 2.5rem; }
@@ -2174,7 +2180,7 @@
         (function initTheme() {
             try {
                 const saved = localStorage.getItem('mlgTheme');
-                const theme = saved || 'light';
+                const theme = saved || 'dark';
                 if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
             } catch (e) {}
         })();
@@ -2288,6 +2294,7 @@
         }
 
         function openCookieBar() {
+            cookieDismissed = false;
             cookieBar.classList.add('show');
         }
 
@@ -2380,9 +2387,13 @@
             cookieDismissed = true;
             closeCookieBar();
         });
-        cookieSettingsBtn.addEventListener('click', () => {
+        function handleCookieSettingsOpen(event) {
+            event.preventDefault();
+            event.stopPropagation();
             openCookieBar();
-        });
+        }
+        cookieSettingsBtn.addEventListener('click', handleCookieSettingsOpen);
+        cookieSettingsBtn.addEventListener('touchend', handleCookieSettingsOpen, { passive: false });
         scrollTopBtn.addEventListener('click', () => scrollToTarget(0, { duration: 1.1 }));
         let scrollRafPending = false;
         window.addEventListener('scroll', () => {
@@ -2413,7 +2424,7 @@
         // React to system changes only if user hasn't set a preference
         window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
             try {
-                if (!localStorage.getItem('mlgTheme')) applyTheme(e.matches ? 'light' : 'dark');
+                if (!localStorage.getItem('mlgTheme')) applyTheme('dark');
             } catch (err) {}
         });
 
